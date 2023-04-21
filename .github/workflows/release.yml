@@ -6,20 +6,12 @@ jobs:
   release:
     name: Upload Release Asset
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
       - name: Prepare release Asset
         run: zip -r adserver.zip caronte destructivefarm worker .dockerignore config.example.toml docker-compose.yml poetry.lock pyproject.toml README.md
       - name: Upload Release Asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: softprops/action-gh-release@v1
         with:
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ./adserver.zip
-          asset_name: AssetName
-          asset_content_type: application/octet-stream
+          files: adserver.zip
