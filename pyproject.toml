@@ -1,0 +1,24 @@
+[tool.poetry]
+name = "adserver"
+version = "0.1.0"
+description = ""
+authors = ["rikyiso01 <riky.isola@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.8"
+toml = "^0.10.2"
+paramiko = "^3.0.0"
+httpx = "^0.23.3"
+
+
+[tool.poetry.group.tests.dependencies]
+pytest = "^7.2.1"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-s"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

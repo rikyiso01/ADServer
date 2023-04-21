@@ -1,0 +1,24 @@
+version: '3.9'
+
+services:
+  sshserver:
+    ports:
+      - "2222:22"
+    build: .
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    networks:
+      - adserver_default
+
+  gitserver:
+    ports:
+      - "2223:22"
+    build:
+      context: git
+    networks:
+      - adserver_default
+
+networks:
+  adserver_default:
+    external: true
