@@ -7,10 +7,16 @@ from subprocess import check_call, run, PIPE, DEVNULL
 def setup_keys(ip: str | None, port: int | None):
     config = load_config()
     with ssh_connect(ip, port) as ssh:
-        ssh.check_call("apt-get update")
-        ssh.check_call(
-            "apt-get install -y --no-install-recommends tcpdump iproute2 git"
-        )
+        while ssh.run("command -v tcpdump ip git") != 0:
+            if ssh.run("command -v apt-get") == 0:
+                ssh.check_call("apt-get update")
+                ssh.check_call(
+                    "apt-get install -y --no-install-recommends tcpdump iproute2 git"
+                )
+            else:
+                input(
+                    "No known package manager found on the server, please install tcpdump iproute2 git, then press enter to continue"
+                )
         if not ssh.exists(join("/", "root", ".ssh")):
             ssh.sftp.mkdir(join("/", "root", ".ssh"))
         for key in get_ssh_keys(config["sshkeys"]["github_users"]):
@@ -47,14 +53,24 @@ def setup_git(services: list[str], ip: str | None, port: int | None):
 
 
 def autosetup(ip: str | None, port: int | None):
+    print("Welcome, I am the auto-setupper, I will now setup some things for you")
+    print("Now, I will install your team members key on the server")
     setup_keys(ip, port)
+    print("Done")
     print("You can now login to check the interface name with 'ip a'")
-    input("Change interface name in config.toml then press enter to continue ")
+    input(
+        "Change the interface name and the number of teams in the config.toml file then press enter to continue "
+    )
+    print("I will now start the support server")
     check_call(["docker-compose", "up", "-d"])
+    print("Done")
     services: list[str] = []
     while not services:
         services = input("Write all services' name separated by a space: ").split()
+    print("I will now setup the git repo")
     setup_git(services, ip, port)
+    print("Done")
+    print("Have a good day :)")
 
 
 SERVICES = ["destructivefarm", "caronte", "worker"]
