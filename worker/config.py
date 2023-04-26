@@ -29,6 +29,7 @@ class Teams(TypedDict):
     format: str
     min_team: int
     max_team: int
+    self_team: int
 
 
 class Flag(TypedDict):

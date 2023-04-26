@@ -7,7 +7,7 @@ from httpx import get
 
 CONFIG = """
 CONFIG = {{
-    "TEAMS": {{f"Team #{{i}}": "{teams}".format(i) for i in range({min_team},{max_team}+1)}},
+    "TEAMS": {{f"Team #{{i}}": "{teams}".format(i) for i in range({min_team},{max_team}+1) if i!={self_team}}},
     "FLAG_FORMAT": r"{flag}",
     {system},
     "SUBMIT_FLAG_LIMIT": {flag_limit},
@@ -30,6 +30,7 @@ def generate_config() -> str:
         teams=teams["format"],
         max_team=teams["max_team"],
         min_team=teams["min_team"],
+        self_team=teams["self_team"],
         flag=flag["format"],
         system=",\n    ".join(
             f'"{key.upper()}":{repr(value)}' for key, value in farm["submit"].items()

@@ -1,20 +1,21 @@
 [teams]
-format="10.0.0.{}"
-min_team=1
-max_team=29
+format = "10.0.0.{}"
+min_team = 1
+max_team = 29
+self_team = 16
 
 [flag]
-format="[A-Z0-9]{31}="
+format = "[A-Z0-9]{31}="
 
 [farm]
-password="1234"
-enable_api_auth= false
-api_token= '00000000000000000000'
+password = "1234"
+enable_api_auth = false
+api_token = '00000000000000000000'
 
 [farm.submit]
-system_protocol="ructf_tcp"
-system_host="127.0.0.1"
-system_port=31337
+system_protocol = "ructf_tcp"
+system_host = "127.0.0.1"
+system_port = 31337
 
 #system_protocol="ructf_http"
 #system_url="http://monitor.ructfe.org/flags"
@@ -29,27 +30,34 @@ system_port=31337
 #team_token="your_secret_token"
 
 [farm.flag]
-submit_flag_limit=50
-submit_period=5
-flag_lifetime=300
+submit_flag_limit = 50
+submit_period = 5
+flag_lifetime = 300
 
 [server]
-host='10.60.16.1'
-port=22
-password="test"
+host = '10.60.16.1'
+port = 22
+password = "test"
 
 [aliases]
-dock="docker-compose build --parallel --no-rm && docker-compose down --remove-orphans -t 0 && docker-compose up -d"
-deploy="echo -n $(git rev-parse HEAD) > .prev.txt && git pull && dock"
-revert="git reset --hard $(cat .prev.txt) && dock"
+dock = "docker-compose build --parallel --no-rm && docker-compose down --remove-orphans -t 0 && docker-compose up -d"
+deploy = "echo -n $(git rev-parse HEAD) > .prev.txt && git pull && dock"
+revert = "git reset --hard $(cat .prev.txt) && dock"
 
 [tcpdumper]
-interface='game'
-interval=60
+interface = 'game'
+interval = 60
 
 [git]
-git_repo='git@github.com:rikyiso01/AD24-06-2022-1.git'
-ssh_key='$HOME/.ssh/id_ed25519'
+git_repo = 'git@github.com:rikyiso01/AD24-06-2022-1.git'
+ssh_key = '$HOME/.ssh/id_ed25519'
 
 [sshkeys]
-github_users=['fabifont','LorenzoGuideri','gabri1135','LorenzoLaCorte','Samyber','rikyiso01']
+github_users = [
+    'fabifont',
+    'LorenzoGuideri',
+    'gabri1135',
+    'LorenzoLaCorte',
+    'Samyber',
+    'rikyiso01',
+]

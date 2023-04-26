@@ -1,20 +1,21 @@
 [teams]
-format="10.0.0.{}"
-min_team=1
-max_team=29
+format = "10.0.0.{}"
+min_team = 1
+max_team = 29
+self_team = 2
 
 [flag]
-format="[A-Z0-9]{31}="
+format = "[A-Z0-9]{31}="
 
 [farm]
-password="1234"
-enable_api_auth= false
-api_token= '00000000000000000000'
+password = "1234"
+enable_api_auth = false
+api_token = '00000000000000000000'
 
 [farm.submit]
-system_protocol="ructf_tcp"
-system_host="127.0.0.1"
-system_port=31337
+system_protocol = "ructf_tcp"
+system_host = "127.0.0.1"
+system_port = 31337
 
 #system_protocol="ructf_http"
 #system_url="http://monitor.ructfe.org/flags"
@@ -30,25 +31,25 @@ system_port=31337
 
 
 [farm.flag]
-submit_flag_limit=50
-submit_period=5
-flag_lifetime=300
+submit_flag_limit = 50
+submit_period = 5
+flag_lifetime = 300
 
 [server]
-host='sshserver'
-port=22
-password="test"
+host = 'sshserver'
+port = 22
+password = "test"
 
 [aliases]
-abcd='ls'
+abcd = 'ls'
 
 [tcpdumper]
-interface='eth0'
-interval=1
+interface = 'eth0'
+interval = 1
 
 [git]
-git_repo='git@gitserver:/opt/git/project.git'
-ssh_key='tests/test_rsa'
+git_repo = 'git@gitserver:/opt/git/project.git'
+ssh_key = 'tests/test_rsa'
 
 [sshkeys]
-github_users=['rikyiso01']
+github_users = ['rikyiso01']
