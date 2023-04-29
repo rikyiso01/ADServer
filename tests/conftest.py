@@ -1,3 +1,4 @@
+from __future__ import annotations
 from worker.config import load_config, Config
 from worker.scripts import setup_keys
 from worker.ssh import ssh_connect, SSH

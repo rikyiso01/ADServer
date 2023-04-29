@@ -1,3 +1,4 @@
+from __future__ import annotations
 from worker.scripts import setup_git, get_aliases, get_aliases_command
 from worker.ssh import SSH
 from worker.config import Config

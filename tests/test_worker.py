@@ -1,3 +1,4 @@
+from __future__ import annotations
 from worker.rsyncer import healthcheck
 from worker.ssh import SSH
 from tempfile import TemporaryDirectory

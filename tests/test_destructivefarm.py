@@ -1,3 +1,4 @@
+from __future__ import annotations
 from worker.destructivefarm import generate_config, healthcheck
 from worker.config import Config
 from typing import Any

@@ -1,3 +1,4 @@
+from __future__ import annotations
 from worker.ssh import SSH
 from worker.caronte import healthcheck
 
