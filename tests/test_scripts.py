@@ -15,8 +15,7 @@ alias docker-compose="docker compose"
 alias abcd="ls"
 """
     actual = run(
-        get_aliases_command(get_aliases(test_config["aliases"])),
-        shell=True,
+        ["bash", "-c", get_aliases_command(get_aliases(test_config["aliases"]))],
         check=True,
         stdout=PIPE,
         text=True,
@@ -27,12 +26,14 @@ alias abcd="ls"
 def test_scripts_aliases_command(test_config: Config):
     with NamedTemporaryFile() as tmp:
         check_call(
-            f'({get_aliases_command(get_aliases(test_config["aliases"]))}) >> {tmp.name}',
-            shell=True,
+            [
+                "bash",
+                "-c",
+                f'({get_aliases_command(get_aliases(test_config["aliases"]))}) >> {tmp.name}',
+            ],
         )
         aliases = run(
-            f"shopt -s expand_aliases && source {tmp.name} && alias",
-            shell=True,
+            ["bash", "-c", f"shopt -s expand_aliases && source {tmp.name} && alias"],
             stdout=PIPE,
             text=True,
         ).stdout
