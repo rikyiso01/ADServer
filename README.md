@@ -6,16 +6,14 @@
 -   python>=3.8
 -   docker/podman
 -   docker-compose
--   ssh (testing only)
--   git (testing only)
 
 ### Basic remote server requirements
 
 -   docker
--   docker-compose >= 2 ('docker-compose' as an alias for 'docker compose')
+-   docker-compose
 -   ssh
 
-### Automatically installed requirements
+### Automatically installed remote requirements
 
 Note: they need to available to be installed from a package manager
 
