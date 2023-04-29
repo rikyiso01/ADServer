@@ -9,7 +9,7 @@ if version_info.minor > 8:
         healthcheck as destructivefarm_check,
     )
     from worker.rsyncer import main as worker, healthcheck as worker_check
-    from worker.scripts import setup_git, setup_keys, autosetup, status
+    from worker.scripts import setup_git, setup_keys, autosetup, status, check_keys
 
 
 def main():
@@ -38,6 +38,7 @@ def main():
     subparser.add_argument("ip", default=None, nargs="?")
     subparser.add_argument("port", default=None, nargs="?")
     subparser = sub.add_parser("status")
+    subparser = sub.add_parser("check_keys")
     args = parser.parse_args()
     if args.script == "server":
         if args.service == "caronte":
@@ -62,6 +63,8 @@ def main():
         autosetup(args.ip, args.port)
     elif args.script == "status":
         status()
+    elif args.script == "check_keys":
+        check_keys()
     else:
         assert False, "Option not implemented"
 

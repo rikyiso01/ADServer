@@ -10,6 +10,7 @@ from worker.config import (
     COMPRESSED_FOLDER,
     UNCOMPRESSED_FOLDER,
     BACKUP_FOLDER,
+    DATA_FOLDER,
 )
 from paramiko import SFTPClient
 from paramiko.ssh_exception import NoValidConnectionsError
@@ -21,51 +22,45 @@ from sys import stderr
 from socket import gaierror
 
 
-def healthcheck(ip: str | None = None, port: int | None = None) -> None:
-    print("connecting", flush=True)
+def healthcheck(
+    ip: str | None = None, port: int | None = None, data_folder: str = DATA_FOLDER
+) -> None:
+    compressed = listdir(join(data_folder, "compressed"))
+    uncompressed = listdir(join(data_folder, "uncompressed"))
+    backups = listdir(join(data_folder, "backup"))
+    assert len(compressed) <= 1
+    assert len(uncompressed) <= 1
+    assert len(backups) >= 1
+    for name in compressed:
+        assert splitext(name)[1] == ".gz"
+    for name in uncompressed:
+        assert splitext(name)[1] == ".pcap"
+    for name in backups:
+        assert splitext(name)[1] == ".pcap"
     with ssh_connect(ip, port) as ssh:
-        print("connected", flush=True)
-        result = ssh.run("pgrep tcpdump")
-        assert result == 0
+        assert ssh.run("pgrep tcpdump") == 0
+        assert len(ssh.sftp.listdir(SERVER_DUMPS_FOLDER)) <= 2
 
 
 def main() -> NoReturn:
     print("Main", flush=True)
     config = load_config()
     signal(SIGTERM, lambda _, __: exit())
-    while True:
-        try:
-            with ssh_connect() as ssh:
-                print("Executing pkill", flush=True)
-                ssh.run("pkill tcpdump")
-                print("Making dir", flush=True)
-                if not ssh.exists(SERVER_DUMPS_FOLDER):
-                    ssh.sftp.mkdir(SERVER_DUMPS_FOLDER)
-                makedirs(COMPRESSED_FOLDER, exist_ok=True)
-                makedirs(UNCOMPRESSED_FOLDER, exist_ok=True)
-                makedirs(BACKUP_FOLDER, exist_ok=True)
-                print("Executing tcpdump", flush=True)
-                while ssh.run("command -v tcpdump") != 0:
-                    print(
-                        "Waiting for tcpdump to be installed", file=stderr, flush=True
-                    )
-                    sleep(1)
-                ssh.popen(
-                    f"tcpdump -w '{SERVER_DUMPS_FOLDER}/%H-%M-%S.pcap' -G {config['tcpdumper']['interval']} -Z root -i '{config['tcpdumper']['interface']}' -z gzip not port {config['server']['port']} > /dev/null 2> /dev/null",
-                )
-            break
-        except NoValidConnectionsError as e:
-            print(e, file=stderr, flush=True)
-        except gaierror as e:
-            print(e, file=stderr, flush=True)
-        except TimeoutError as e:
-            print(e, file=stderr, flush=True)
-        sleep(1)
+    makedirs(COMPRESSED_FOLDER, exist_ok=True)
+    makedirs(UNCOMPRESSED_FOLDER, exist_ok=True)
+    makedirs(BACKUP_FOLDER, exist_ok=True)
     while True:
         print("looping", flush=True)
-        with ssh_connect() as ssh:
-            loop(ssh.sftp)
-        sleep(config["tcpdumper"]["interval"])
+        try:
+            with ssh_connect() as ssh:
+                while not ssh.exists(SERVER_DUMPS_FOLDER):
+                    print("Waiting for dumps folder creation", flush=True)
+                    sleep(1)
+                loop(ssh.sftp)
+            sleep(config["tcpdumper"]["interval"])
+        except (NoValidConnectionsError, gaierror, TimeoutError) as e:
+            print(e, file=stderr, flush=True)
+            sleep(1)
 
 
 def loop(client: SFTPClient) -> None:

@@ -1,18 +1,12 @@
 ## Requirements
 
--   Debian
--   ipv6
--   utente root
-
-## Local Requirements:
+### Local Requirements:
 
 -   poetry with python>=3.9
 -   docker/podman
 -   docker-compose
 
-## Remote requirements:
-
-### Basic requirements
+### Basic remote server requirements
 
 -   docker
 -   docker-compose
@@ -20,10 +14,32 @@
 
 ### Automatically installed requirements
 
-Note: they need to available to be installed from apt
+Note: they need to available to be installed from a package manager
 
 -   tcpdump
 -   iproute2
 -   git
--   python3
--   python3-pip
+
+## Installation
+
+Install the python dependencies with poetry
+
+```bash
+poetry install
+```
+
+Prepare the docker images
+
+```bash
+docker-compose build
+```
+
+## Usage
+
+When the competition starts run
+
+```bash
+poetry run python -m worker autosetup
+```
+
+and follow the instructions

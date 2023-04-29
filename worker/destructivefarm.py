@@ -1,5 +1,5 @@
 from __future__ import annotations
-from worker.config import load_config
+from worker.config import load_config, get_host_ip
 from os.path import join
 from subprocess import Popen
 from signal import signal, SIGTERM
@@ -7,7 +7,7 @@ from httpx import get
 
 CONFIG = """
 CONFIG = {{
-    "TEAMS": {{f"Team #{{i}}": "{teams}".format(i) for i in range({min_team},{max_team}+1) if i!={self_team}}},
+    "TEAMS": {teams},
     "FLAG_FORMAT": r"{flag}",
     {system},
     "SUBMIT_FLAG_LIMIT": {flag_limit},
@@ -20,17 +20,21 @@ CONFIG = {{
 """
 
 
-def generate_config() -> str:
+def generate_config(self_host: str | None = None) -> str:
     config = load_config()
+    if self_host is None:
+        self_host = get_host_ip(config["server"]["host"])
     teams = config["teams"]
     flag = config["flag"]
     farm = config["farm"]
     farm_flag = farm["flag"]
+    teams_dict = {
+        f"Team #{i}": teams["format"].format(i)
+        for i in range(teams["min_team"], teams["max_team"] + 1)
+        if teams["format"].format(i) != self_host
+    }
     return CONFIG.format(
-        teams=teams["format"],
-        max_team=teams["max_team"],
-        min_team=teams["min_team"],
-        self_team=teams["self_team"],
+        teams=repr(teams_dict),
         flag=flag["format"],
         system=",\n    ".join(
             f'"{key.upper()}":{repr(value)}' for key, value in farm["submit"].items()

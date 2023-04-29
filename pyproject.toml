@@ -20,5 +20,5 @@ testpaths = ["tests"]
 addopts = "-s"
 
 [build-system]
-requires = ["poetry-core"]
+requires = ["poetry-core>=1.0.8"]
 build-backend = "poetry.core.masonry.api"

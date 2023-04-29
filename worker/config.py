@@ -3,6 +3,9 @@ from typing import TypedDict, Any, cast
 from toml import load
 from os.path import join
 from httpx import get
+from socket import gethostbyname, gaierror
+from sys import stderr
+from time import sleep
 
 DATA_FOLDER = join("/", "data")
 UNCOMPRESSED_FOLDER = join(DATA_FOLDER, "uncompressed")
@@ -29,7 +32,6 @@ class Teams(TypedDict):
     format: str
     min_team: int
     max_team: int
-    self_team: int
 
 
 class Flag(TypedDict):
@@ -81,10 +83,16 @@ def get_git_host(repo: str) -> str:
 def get_ssh_keys(github_users: list[str]) -> list[str]:
     result: list[str] = []
     for user in github_users:
-        url = GITHUB_KEYS_URL.format(user)
-        keys: list[GithubUserKey] = get(url).json()
-        for key in keys:
-            result.append(key["key"])
+        result.extend(get_ssh_key(user))
+    return result
+
+
+def get_ssh_key(github_user: str) -> list[str]:
+    result: list[str] = []
+    url = GITHUB_KEYS_URL.format(github_user)
+    keys: list[GithubUserKey] = get(url).json()
+    for key in keys:
+        result.append(key["key"])
     return result
 
 
@@ -93,9 +101,14 @@ class GithubUserKey(TypedDict):
     key: str
 
 
-def get_aliases(aliases: dict[str, str]) -> str:
-    assert all("'" not in key for key in aliases)
-    assert all('"' not in key for key in aliases)
-    assert all("'" not in value for value in aliases.values())
-    assert all('"' not in value for value in aliases.values())
-    return "\n".join(f"alias {key}='{value}'" for key, value in aliases.items())
+def escape_shell(command: str) -> str:
+    return command.replace("\\", "\\\\").replace("$", "\\$").replace('"', '\\"')
+
+
+def get_host_ip(host: str) -> str:
+    while True:
+        try:
+            return gethostbyname(host)
+        except gaierror as e:
+            print(e, file=stderr, flush=True)
+        sleep(1)

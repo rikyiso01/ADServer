@@ -1,7 +1,30 @@
 from worker.ssh import ssh_connect
-from worker.config import load_config, get_git_host, get_ssh_keys, get_aliases
+from worker.config import (
+    load_config,
+    get_git_host,
+    get_ssh_keys,
+    escape_shell,
+    get_ssh_key,
+    SERVER_DUMPS_FOLDER,
+)
 from os.path import basename, join, expanduser, expandvars
 from subprocess import check_call, run, PIPE, DEVNULL
+
+
+def get_aliases(aliases: dict[str, str]) -> list[str]:
+    for key in aliases:
+        assert " " not in key
+        assert "$" not in key
+        assert "'" not in key
+        assert '"' not in key
+        assert "\\" not in key
+        assert "(" not in key
+        assert ")" not in key
+    return [f'alias {key}="{escape_shell(value)}"' for key, value in aliases.items()]
+
+
+def get_aliases_command(aliases: list[str]) -> str:
+    return " && ".join(f'echo "{escape_shell(alias)}"' for alias in aliases)
 
 
 def setup_keys(ip: str | None, port: int | None):
@@ -25,13 +48,19 @@ def setup_keys(ip: str | None, port: int | None):
             f"ssh-keyscan -t rsa {get_git_host(config['git']['git_repo'])} >> {join('/','root','.ssh','known_hosts')}"
         )
         ssh.check_call(
-            f'echo "{get_aliases(config["aliases"])}" >> {join("/","root",".profile")}'
+            f'({get_aliases_command(get_aliases(config["aliases"]))}) >> .profile'
         )
         ssh.sftp.put(
             expanduser(expandvars(config["git"]["ssh_key"])),
             join("/", "root", ".ssh", "id_rsa"),
         )
         ssh.check_call("chmod 600 /root/.ssh/id_rsa")
+        ssh.run("pkill tcpdump")
+        ssh.check_call("mkdir -p dumps")
+        ssh.check_call("rm -f dumps/*.pcap")
+        ssh.popen(
+            f"tcpdump -w '{SERVER_DUMPS_FOLDER}/%H-%M-%S.pcap' -G {config['tcpdumper']['interval']} -Z root -i '{config['tcpdumper']['interface']}' -z gzip not port {config['server']['port']} > /dev/null 2> /dev/null",
+        )
 
 
 def setup_git(services: list[str], ip: str | None, port: int | None):
@@ -70,7 +99,7 @@ def autosetup(ip: str | None, port: int | None):
     print("I will now setup the git repo")
     setup_git(services, ip, port)
     print("Done")
-    print("Have a good day :)")
+    print("Have a good day, sir :)")
 
 
 SERVICES = ["destructivefarm", "caronte", "worker"]
@@ -100,3 +129,10 @@ def status():
         else:
             print("\033[91merror", end="")
         print("\x1b[0m")
+
+
+def check_keys():
+    config = load_config()
+    for user in config["sshkeys"]["github_users"]:
+        if not get_ssh_key(user):
+            print(user, "has no ssh keys")
