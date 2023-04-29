@@ -41,7 +41,7 @@ def remote_server(docker: Config) -> Iterable[SSH]:
     sleep(1)
     setup_keys("127.0.0.1", 2222)
     print("setupped keys")
-    sleep(5)
+    sleep(6)
     with ssh_connect("127.0.0.1", 2222) as ssh:
         yield ssh
     check_call(["docker-compose", "-f", "tests/docker-compose.yml", "down", "-v"])
