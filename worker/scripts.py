@@ -1,3 +1,4 @@
+from __future__ import annotations
 from worker.ssh import ssh_connect
 from worker.config import (
     load_config,

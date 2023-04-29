@@ -2,15 +2,14 @@ from __future__ import annotations
 from paramiko import MissingHostKeyPolicy, SSHClient, SFTPClient
 from worker.config import load_config
 from collections.abc import Callable
-from contextlib import AbstractContextManager
-from typing import Type, Any
+from typing import Type, Any, ContextManager
 from types import TracebackType
 from sys import stdout, stderr
 from os.path import dirname, basename
 from time import sleep
 
 
-class SSH(AbstractContextManager["SSH"]):
+class SSH(ContextManager["SSH"]):
     def __init__(self, client: SSHClient):
         self.__client = client
         self.__sftp = self.__client.open_sftp()

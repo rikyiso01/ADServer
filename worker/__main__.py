@@ -1,15 +1,12 @@
 from __future__ import annotations
-from sys import version_info
 from worker.caronte import main as caronte, healthcheck as caronte_check
 from argparse import ArgumentParser
-
-if version_info.minor > 8:
-    from worker.destructivefarm import (
-        main as destructivefarm,
-        healthcheck as destructivefarm_check,
-    )
-    from worker.rsyncer import main as worker, healthcheck as worker_check
-    from worker.scripts import setup_git, setup_keys, autosetup, status, check_keys
+from worker.destructivefarm import (
+    main as destructivefarm,
+    healthcheck as destructivefarm_check,
+)
+from worker.rsyncer import main as worker, healthcheck as worker_check
+from worker.scripts import setup_git, setup_keys, autosetup, status, check_keys
 
 
 def main():

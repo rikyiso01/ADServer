@@ -2,9 +2,12 @@
 
 ### Local Requirements:
 
--   poetry with python>=3.9
+-   poetry>=1.3.0
+-   python>=3.8
 -   docker/podman
 -   docker-compose
+-   ssh (testing only)
+-   git (testing only)
 
 ### Basic remote server requirements
 
