@@ -12,7 +12,7 @@
 ### Basic remote server requirements
 
 -   docker
--   docker-compose
+-   docker-compose >= 2 ('docker-compose' as an alias for 'docker compose')
 -   ssh
 
 ### Automatically installed requirements

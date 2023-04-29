@@ -15,6 +15,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Install docker-compose switch
+        run: curl -fL https://raw.githubusercontent.com/docker/compose-switch/master/install_on_linux.sh | sh
       - uses: actions/checkout@v3
         with:
           submodules: true

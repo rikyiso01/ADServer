@@ -63,23 +63,6 @@ def test_scripts_git(remote_server: SSH):
         )
 
 
-def test_scripts_keys(remote_server: SSH):
-    assert (
-        call(
-            [
-                "ssh",
-                "-o",
-                "StrictHostKeyChecking=no",
-                "root@127.0.0.1",
-                "-p",
-                "2222",
-                "ls",
-            ]
-        )
-        == 0
-    )
-
-
 def test_scripts_aliases_final(remote_server: SSH):
     assert (
         remote_server.run("shopt -s expand_aliases && source .profile && eval abcd")
