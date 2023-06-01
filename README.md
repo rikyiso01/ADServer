@@ -27,6 +27,8 @@ Note: they need to available to be installed from a package manager
 
 ## Installation
 
+Download the latest version from the [release section](https://github.com/rikyiso01/ADServer/releases)
+
 Install the python dependencies with poetry
 
 ```bash
