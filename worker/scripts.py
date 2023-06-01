@@ -92,7 +92,7 @@ def autosetup(ip: str | None, port: int | None):
         "Change the interface name and the number of teams in the config.toml file then press enter to continue "
     )
     print("I will now start the support server")
-    check_call(["docker-compose", "up", "-d"])
+    check_call(["docker", "compose", "up", "-d"])
     print("Done")
     services: list[str] = []
     while not services:

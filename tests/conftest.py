@@ -23,20 +23,20 @@ def test_config() -> Iterable[Config]:
 
 @fixture(scope="session")
 def docker(test_config: Config) -> Iterable[Config]:
-    check_call(["docker-compose", "down", "-v"])
-    check_call(["docker-compose", "up", "-d", "--build"])
+    check_call(["docker", "compose", "down", "-v"])
+    check_call(["docker", "compose", "up", "-d", "--build"])
     sleep(1)
     yield test_config
-    check_call(["docker-compose", "logs"])
-    check_call(["docker-compose", "down", "-v"])
+    check_call(["docker", "compose", "logs"])
+    check_call(["docker", "compose", "down", "-v"])
 
 
 @fixture(scope="session")
 def remote_server(docker: Config) -> Iterable[SSH]:
     print("before docker compose")
-    check_call(["docker-compose", "-f", "tests/docker-compose.yml", "down", "-v"])
+    check_call(["docker", "compose", "-f", "tests/docker-compose.yml", "down", "-v"])
     check_call(
-        ["docker-compose", "-f", "tests/docker-compose.yml", "up", "-d", "--build"]
+        ["docker", "compose", "-f", "tests/docker-compose.yml", "up", "-d", "--build"]
     )
     sleep(1)
     setup_keys("127.0.0.1", 2222)
@@ -44,4 +44,4 @@ def remote_server(docker: Config) -> Iterable[SSH]:
     sleep(6)
     with ssh_connect("127.0.0.1", 2222) as ssh:
         yield ssh
-    check_call(["docker-compose", "-f", "tests/docker-compose.yml", "down", "-v"])
+    check_call(["docker", "compose", "-f", "tests/docker-compose.yml", "down", "-v"])
