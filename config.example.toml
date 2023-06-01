@@ -12,7 +12,7 @@ password = "1234"                  # Destructive farm password
 enable_api_auth = false
 api_token = '00000000000000000000'
 
-[farm.submit] # Checker flag submission protocol
+[farm.submit] # Flag submission protocol settings
 system_protocol = "ructf_tcp"
 system_host = "127.0.0.1"
 system_port = 31337
@@ -46,9 +46,9 @@ deploy = "echo -n $(git rev-parse HEAD) > .prev.txt && git pull && dock"
 revert = "git reset --hard $(cat .prev.txt) && dock"
 docker-compose = 'docker compose'
 
-[tcpdumper] # Interface to use for tcpdump and pcap time length
-interface = 'game'
-interval = 60
+[tcpdumper]
+interface = 'game' # Interface to use for tcpdump
+interval = 60      # tcpdump pcap time length
 
 [git]
 git_repo = 'git@github.com:rikyiso01/AD24-06-2022-1.git' # Git repo to push services to
