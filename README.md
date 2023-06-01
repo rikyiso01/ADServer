@@ -1,16 +1,20 @@
+# ADServer
+
+A fast to setup support server for AD ctfs
+
 ## Requirements
 
 ### Local Requirements:
 
--   poetry>=1.3.0
--   python>=3.8
+-   poetry >= 1.3.0
+-   python >= 3.8
 -   docker/podman
--   docker-compose
+-   docker compose >= 2
 
 ### Basic remote server requirements
 
 -   docker
--   docker-compose
+-   docker compose
 -   ssh
 
 ### Automatically installed remote requirements
@@ -44,3 +48,9 @@ poetry run python -m worker autosetup
 ```
 
 and follow the instructions
+
+After the competition you can cleanup the data with
+
+```bash
+docker compose down -v
+```
