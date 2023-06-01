@@ -1,18 +1,18 @@
 [teams]
-format = "10.0.0.{}"
-min_team = 1
-max_team = 29
-self_team = 16
+format = "10.60.{}.1" # Format string of teams ip address
+self_team = 43        # Your team number to avoid attacking yourself
+min_team = 1          # Minimum ip number to attack
+max_team = 86         # Maximum ip number to attack
 
 [flag]
-format = "[A-Z0-9]{31}="
+format = "[A-Z0-9]{31}=" # Regex of the flags
 
 [farm]
-password = "1234"
+password = "1234"                  # Destructive farm password
 enable_api_auth = false
 api_token = '00000000000000000000'
 
-[farm.submit]
+[farm.submit] # Checker flag submission protocol
 system_protocol = "ructf_tcp"
 system_host = "127.0.0.1"
 system_port = 31337
@@ -29,30 +29,32 @@ system_port = 31337
 #system_port=31337
 #team_token="your_secret_token"
 
+
 [farm.flag]
-submit_flag_limit = 50
-submit_period = 5
-flag_lifetime = 300
+submit_flag_limit = 50 # The server will submit not more than SUBMIT_FLAG_LIMIT flags
+submit_period = 5      # every SUBMIT_PERIOD seconds. Flags received more than
+flag_lifetime = 300    # FLAG_LIFETIME seconds ago will be skipped.
 
 [server]
-host = '10.60.16.1'
-port = 22
-password = "test"
+host = '10.60.16.1' # Vulnbox ip address
+port = 22           # Vulnbox ssh port
+password = "test"   # Vulnbox ssh password
 
-[aliases]
+[aliases] # Alias to insert into .profile
 dock = "docker-compose build --parallel --no-rm && docker-compose down --remove-orphans -t 0 && docker-compose up -d"
 deploy = "echo -n $(git rev-parse HEAD) > .prev.txt && git pull && dock"
 revert = "git reset --hard $(cat .prev.txt) && dock"
+docker-compose = 'docker compose'
 
-[tcpdumper]
+[tcpdumper] # Interface to use for tcpdump and pcap time length
 interface = 'game'
 interval = 60
 
 [git]
-git_repo = 'git@github.com:rikyiso01/AD24-06-2022-1.git'
-ssh_key = '$HOME/.ssh/id_ed25519'
+git_repo = 'git@github.com:rikyiso01/AD24-06-2022-1.git' # Git repo to push services to
+ssh_key = '$HOME/.ssh/id_ed25519'                        # Path of the private key to use to push to Github
 
-[sshkeys]
+[sshkeys] # Github users of the team members to use to copy their ssh key
 github_users = [
     'fabifont',
     'LorenzoGuideri',
