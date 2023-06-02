@@ -1,4 +1,4 @@
-FROM debian:bullseye-20230208-slim
+FROM docker.io/debian:bullseye-20230208-slim
 
 RUN apt-get update &&\
     apt-get install -y --no-install-recommends openssh-server &&\

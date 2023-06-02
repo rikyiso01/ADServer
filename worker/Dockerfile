@@ -1,7 +1,7 @@
-FROM python:3.10.8
+FROM docker.io/python:3.8.16-alpine3.18
 
 WORKDIR /app
-RUN python3 -m pip install poetry
+RUN apk add --no-cache poetry
 COPY ./pyproject.toml ./poetry.lock /app/
 RUN poetry install --only main
 COPY worker /app/worker

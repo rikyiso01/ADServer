@@ -13,7 +13,7 @@ services:
     restart: unless-stopped
 
   mongo:
-    image: mongo:6.0.4-jammy
+    image: docker.io/mongo:6.0.6-jammy
     restart: unless-stopped
 
   caronte:
