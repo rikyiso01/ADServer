@@ -1,4 +1,4 @@
-FROM docker.io/python:3.8.16-alpine3.18
+FROM docker.io/python:3.11.4-alpine3.18
 
 WORKDIR /app
 RUN apk add --no-cache poetry

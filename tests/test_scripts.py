@@ -15,7 +15,7 @@ alias docker-compose="docker compose"
 alias abcd="ls"
 """
     actual = run(
-        ["bash", "-c", get_aliases_command(get_aliases(test_config["aliases"]))],
+        ["sh", "-c", get_aliases_command(get_aliases(test_config["aliases"]))],
         check=True,
         stdout=PIPE,
         text=True,
@@ -27,13 +27,13 @@ def test_scripts_aliases_command(test_config: Config):
     with NamedTemporaryFile() as tmp:
         check_call(
             [
-                "bash",
+                "sh",
                 "-c",
                 f'({get_aliases_command(get_aliases(test_config["aliases"]))}) >> {tmp.name}',
             ],
         )
         aliases = run(
-            ["bash", "-c", f"shopt -s expand_aliases && source {tmp.name} && alias"],
+            ["sh", "-c", f"shopt -s expand_aliases && source {tmp.name} && alias"],
             stdout=PIPE,
             text=True,
         ).stdout
@@ -56,7 +56,7 @@ def test_scripts_git(remote_server: SSH):
                     dir,
                 ],
                 env={
-                    "GIT_SSH_COMMAND": "ssh -i tests/test_rsa -o IdentitiesOnly=yes -o StrictHostKeyChecking=no -p 2223",
+                    "GIT_SSH_COMMAND": "ssh -i tests/test_rsa -o IdentitiesOnly=yes -o StrictHostKeyChecking=no -p 2223 -F /dev/null",
                     **environ,
                 },
             )

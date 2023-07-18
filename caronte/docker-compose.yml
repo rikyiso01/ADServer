@@ -1,0 +1,16 @@
+version: '3.9'
+
+services:
+  caronte:
+    build:
+      context: ..
+      target: caronte
+      dockerfile: caronte/Dockerfile
+    ports:
+      - 3333:3333
+    environment:
+      MONGO_HOST: mongo
+
+  mongo:
+    hostname: mongo
+    image: docker.io/mongo:6.0.8-jammy

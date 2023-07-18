@@ -25,8 +25,6 @@ def main():
             "./caronte",
             "-mongo-host",
             environ["MONGO_HOST"],
-            "-mongo-port",
-            environ["MONGO_PORT"],
             "-assembly_memuse_log",
         ]
     )

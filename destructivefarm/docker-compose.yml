@@ -1,0 +1,16 @@
+version: '3.9'
+
+services:
+  destructivefarm:
+    build:
+      context: ..
+      dockerfile: destructivefarm/Dockerfile
+      target: destructivefarm
+    ports:
+      - 5000:5000
+    volumes:
+      - ./config-example.py:/app/server/config.py:ro
+      - flags:/data
+
+volumes:
+  flags:

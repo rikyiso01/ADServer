@@ -13,22 +13,23 @@ services:
     restart: unless-stopped
 
   mongo:
-    image: docker.io/mongo:6.0.6-jammy
+    image: docker.io/mongo:6.0.8-jammy
+    hostname: mongo
     restart: unless-stopped
 
   caronte:
     container_name: adserver-caronte
+    hostname: caronte
     build:
       context: .
       dockerfile: caronte/Dockerfile
     ports:
       - "3333:3333"
     volumes:
-      - ./config.toml:/opt/caronte/config.toml:ro
+      - ./config.toml:/app/config.toml:ro
       - pcap:/data
     environment:
       MONGO_HOST: mongo
-      MONGO_PORT: 27017
     depends_on:
       - mongo
     restart: unless-stopped
@@ -47,3 +48,8 @@ services:
 
 volumes:
   pcap:
+
+
+networks:
+  default:
+    name: adserver_default

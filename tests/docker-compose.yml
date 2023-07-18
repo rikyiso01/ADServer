@@ -2,6 +2,7 @@ version: '3.9'
 
 services:
   sshserver:
+    hostname: sshserver
     ports:
       - "2222:22"
     build: .
@@ -12,6 +13,7 @@ services:
       - adserver_default
 
   gitserver:
+    hostname: gitserver
     ports:
       - "2223:22"
     build:
@@ -22,3 +24,4 @@ services:
 networks:
   adserver_default:
     external: true
+    name: adserver_default
