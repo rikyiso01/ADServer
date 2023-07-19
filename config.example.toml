@@ -1,8 +1,8 @@
 [teams]
 format = "10.60.{}.1" # Format string of teams ip address
-self_team = 43        # Your team number to avoid attacking yourself
-min_team = 1          # Minimum ip number to attack
-max_team = 86         # Maximum ip number to attack
+# self_team = 43        # Your team number to avoid attacking yourself
+min_team = 1  # Minimum ip number to attack
+max_team = 86 # Maximum ip number to attack
 
 [flag]
 format = "[A-Z0-9]{31}=" # Regex of the flags
@@ -47,8 +47,9 @@ revert = "git reset --hard $(cat .prev.txt) && dock"
 docker-compose = 'docker compose'
 
 [tcpdumper]
-interface = 'game' # Interface to use for tcpdump
-interval = 60      # tcpdump pcap time length
+interface = 'game'      # Interface to use for tcpdump
+interval = 60           # tcpdump pcap time length
+dumps_folder = ".dumps" # Where to store tcpdump's dumps
 
 [git]
 git_repo = 'git@github.com:rikyiso01/AD24-06-2022-1.git' # Git repo to push services to

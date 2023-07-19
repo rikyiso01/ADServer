@@ -1,11 +1,12 @@
 from __future__ import annotations
-from worker.config import load_config, get_host_ip
+from worker.config import get_host_ip, CONFIG
 from os.path import join
 from subprocess import Popen
 from signal import signal, SIGTERM
 from httpx import get
+from logging import getLogger
 
-CONFIG = """
+PYTHON_CONFIG = """
 CONFIG = {{
     "TEAMS": {teams},
     "FLAG_FORMAT": r"{flag}",
@@ -21,19 +22,19 @@ CONFIG = {{
 
 
 def generate_config(self_host: str | None = None) -> str:
-    config = load_config()
+    logger = getLogger("destructivefarm.generate_config")
     if self_host is None:
-        self_host = get_host_ip(config["server"]["host"])
-    teams = config["teams"]
-    flag = config["flag"]
-    farm = config["farm"]
+        self_host = get_host_ip(CONFIG["server"]["host"])
+    teams = CONFIG["teams"]
+    flag = CONFIG["flag"]
+    farm = CONFIG["farm"]
     farm_flag = farm["flag"]
     teams_dict = {
         f"Team #{i}": teams["format"].format(i)
         for i in range(teams["min_team"], teams["max_team"] + 1)
         if teams["format"].format(i) != self_host
     }
-    return CONFIG.format(
+    result = PYTHON_CONFIG.format(
         teams=repr(teams_dict),
         flag=flag["format"],
         system=",\n    ".join(
@@ -46,19 +47,37 @@ def generate_config(self_host: str | None = None) -> str:
         api=farm["enable_api_auth"],
         token=farm["api_token"],
     )
+    logger.debug(f"Generated config: {result}")
+    return result
 
 
 def main() -> None:
+    logger = getLogger("destructivefarm")
+    logger.info("Writing destructive farm config")
     with open(join("server", "config.py"), "w") as f:
         f.write(generate_config())
+    logger.info("Starting destructive farm process")
     process = Popen(["./start_server.sh"], cwd="server")
+    logger.debug("Registering SIGTERM signal")
     signal(SIGTERM, lambda _, __: process.kill())
-    exit(process.wait())
+    exit_code = process.wait()
+    if exit_code == 0:
+        logger.info("Destructive Farm exited successfully")
+    else:
+        logger.critical(f"Destructive Farm exited with non 0 exit code: {exit_code}")
+    exit(exit_code)
 
 
 def healthcheck() -> None:
-    config = load_config()
-    actual = get(
-        "http://127.0.0.1:5000", auth=("admin", config["farm"]["password"])
-    ).text
-    assert config["flag"]["format"] in actual
+    logger = getLogger("destructivefarm.healthcheck")
+    logger.debug("Healthchecking destructive farm login")
+    response = get("http://127.0.0.1:5000", auth=("admin", CONFIG["farm"]["password"]))
+    if response.status_code != 200:
+        logger.warning(
+            f"Healthchecking failed: status_code={response.status_code} text={response.text}"
+        )
+    assert response.status_code == 200
+    actual = response.text
+    if CONFIG["flag"]["format"] not in actual:
+        logger.warning(f"Healthchecking failed: text={response.text}")
+    assert CONFIG["flag"]["format"] in actual

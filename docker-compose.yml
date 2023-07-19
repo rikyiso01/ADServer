@@ -10,6 +10,8 @@ services:
       - "5000:5000"
     volumes:
       - ./config.toml:/app/config.toml:ro
+    environment:
+      DEBUG: ${DEBUG-}
     restart: unless-stopped
 
   mongo:
@@ -30,6 +32,7 @@ services:
       - pcap:/data
     environment:
       MONGO_HOST: mongo
+      DEBUG: ${DEBUG-}
     depends_on:
       - mongo
     restart: unless-stopped
@@ -42,6 +45,8 @@ services:
     volumes:
       - ./config.toml:/app/config.toml:ro
       - pcap:/data
+    environment:
+      DEBUG: ${DEBUG-}
     depends_on:
       - caronte
     restart: unless-stopped

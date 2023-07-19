@@ -1,23 +1,37 @@
 from __future__ import annotations
-from typing import TypedDict, Any, cast
+from typing import Any, cast, Dict, List
 from toml import load
 from os.path import join
 from httpx import get
 from socket import gethostbyname, gaierror
-from sys import stderr
 from time import sleep
+from logging import getLogger
+from typing_extensions import TypedDict
+from pydantic import TypeAdapter, ConfigDict
 
 DATA_FOLDER = join("/", "data")
 UNCOMPRESSED_FOLDER = join(DATA_FOLDER, "uncompressed")
 BACKUP_FOLDER = join(DATA_FOLDER, "backup")
 COMPRESSED_FOLDER = join(DATA_FOLDER, "compressed")
 
-SERVER_DUMPS_FOLDER = join("/", "root", "dumps")
-
 GITHUB_KEYS_URL = "https://api.github.com/users/{}/keys"
+
+NETWORK_ATTEMPTS_INTERVAL = 1
+
+CONFIG: Config = cast("Config", {})
+
+
+def load_config(config_path: str):
+    config: dict[str, object] = cast("dict[str, object]", CONFIG)
+    config.clear()
+    new_config = load(config_path)
+    adapter = TypeAdapter(Config)
+    adapter.validate_python(new_config, strict=True)
+    config.update(new_config)
 
 
 class Config(TypedDict):
+    __pydantic_config__ = ConfigDict(extra="forbid")  # type: ignore
     teams: Teams
     flag: Flag
     farm: Farm
@@ -25,55 +39,61 @@ class Config(TypedDict):
     tcpdumper: TcpDumper
     git: Git
     sshkeys: SSHKeys
-    aliases: dict[str, str]
+    aliases: Dict[str, str]
 
 
 class Teams(TypedDict):
+    __pydantic_config__ = ConfigDict(extra="forbid")  # type: ignore
+
     format: str
     min_team: int
     max_team: int
 
 
 class Flag(TypedDict):
+    __pydantic_config__ = ConfigDict(extra="forbid")  # type: ignore
     format: str
 
 
 class Farm(TypedDict):
+    __pydantic_config__ = ConfigDict(extra="forbid")  # type: ignore
     password: str
     enable_api_auth: bool
     api_token: str
-    submit: dict[str, Any]
+    submit: Dict[str, Any]
     flag: FarmFlag
 
 
 class FarmFlag(TypedDict):
+    __pydantic_config__ = ConfigDict(extra="forbid")  # type: ignore
     submit_flag_limit: int
     submit_period: int
     flag_lifetime: int
 
 
 class Server(TypedDict):
+    __pydantic_config__ = ConfigDict(extra="forbid")  # type: ignore
     host: str
     port: int
     password: str
 
 
 class TcpDumper(TypedDict):
+    __pydantic_config__ = ConfigDict(extra="forbid")  # type: ignore
     interface: str
     interval: int
+    dumps_folder: str
 
 
 class Git(TypedDict):
+    __pydantic_config__ = ConfigDict(extra="forbid")  # type: ignore
     git_repo: str
     ssh_key: str
 
 
 class SSHKeys(TypedDict):
-    github_users: list[str]
-
-
-def load_config() -> Config:
-    return cast(Config, load("config.toml"))
+    __pydantic_config__ = ConfigDict(extra="forbid")  # type: ignore
+    github_users: List[str]
 
 
 def get_git_host(repo: str) -> str:
@@ -88,9 +108,14 @@ def get_ssh_keys(github_users: list[str]) -> list[str]:
 
 
 def get_ssh_key(github_user: str) -> list[str]:
+    logger = getLogger("get_ssh_key")
     result: list[str] = []
     url = GITHUB_KEYS_URL.format(github_user)
-    keys: list[GithubUserKey] = get(url).json()
+    logger.debug(f"Getting ssh key of user {github_user}")
+    response = get(url)
+    response.raise_for_status()
+    keys: list[GithubUserKey] = response.json()
+    logger.debug(f"Found {len(keys)} keys for user {github_user}")
     for key in keys:
         result.append(key["key"])
     return result
@@ -106,9 +131,15 @@ def escape_shell(command: str) -> str:
 
 
 def get_host_ip(host: str) -> str:
+    logger = getLogger("get_host_ip")
     while True:
+        logger.debug(f"Resolving {host}")
         try:
-            return gethostbyname(host)
+            result = gethostbyname(host)
+            logger.debug(f"Resolved host with {result}")
+            return result
         except gaierror as e:
-            print(e, file=stderr, flush=True)
-        sleep(1)
+            logger.error(
+                f"Error getting address info of {host}, retrying in {NETWORK_ATTEMPTS_INTERVAL} seconds: {e}",
+            )
+        sleep(NETWORK_ATTEMPTS_INTERVAL)

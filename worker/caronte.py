@@ -1,25 +1,43 @@
 from __future__ import annotations
-from httpx import post, ConnectError, get
-from worker.config import load_config, get_host_ip
+from httpx import post, TransportError, get
+from worker.config import get_host_ip, NETWORK_ATTEMPTS_INTERVAL, CONFIG
 from subprocess import Popen
 from time import sleep
 from signal import signal, SIGTERM
 from os import environ
-from sys import exit, stderr
+from sys import exit
+from logging import getLogger
 
 
 def healthcheck() -> None:
+    logger = getLogger("caronte.healthcheck")
+    logger.debug("Healthchecking rules")
     response = get("http://127.0.0.1:3333/api/rules")
+    if response.status_code != 200:
+        logger.warning(
+            f"Healthchecking rules failed: status_code={response.status_code} text={response.text}"
+        )
     assert response.status_code == 200, response.text
+    logger.debug("Halthchecking pcap sessions")
     response = get("http://127.0.0.1:3333/api/pcap/sessions")
+    if response.status_code != 200:
+        logger.warning(
+            f"Healthchecking pcap sessions failed: status_code={response.status_code} text={response.text}"
+        )
     assert response.status_code == 200
     result = response.json()
     assert isinstance(result, list)
     result: list[object]
+    if not result:
+        logger.warning(
+            f"Healthchecking pcap sessions content failed: text={response.text}"
+        )
     assert len(result) > 0
 
 
 def main():
+    logger = getLogger("caronte")
+    logger.info("Spawning caronte process")
     process = Popen(
         [
             "./caronte",
@@ -30,28 +48,44 @@ def main():
     )
 
     def sigterm() -> None:
-        print("SIGTERM", flush=True)
+        logger.info("Received SIGTERM")
         process.kill()
         exit()
 
+    logger.debug("Registering SIGTERM signal")
     signal(SIGTERM, lambda _, __: sigterm())
-    config = load_config()
     while True:
+        logger.info("Trying to setup Caronte")
+        host = CONFIG["server"]["host"]
+        logger.debug(f"Resolving vulnbox ip: {host}")
+        resolved_ip = get_host_ip(host)
+        logger.debug(f"Resolved vulnbox ip: {resolved_ip}")
         try:
             response = post(
                 "http://127.0.0.1:3333/setup",
                 json={
                     "config": {
-                        "server_address": get_host_ip(config["server"]["host"]),
-                        "flag_regex": config["flag"]["format"],
+                        "server_address": resolved_ip,
+                        "flag_regex": CONFIG["flag"]["format"],
                         "auth_required": False,
                     },
                     "accounts": {},
                 },
             )
-            print(response.status_code, response.text, flush=True)
-            break
-        except ConnectError as e:
-            print(e, file=stderr, flush=True)
-        sleep(1)
-    exit(process.wait())
+        except TransportError as e:
+            logger.error(
+                f"Error setting up caronte, retrying in {NETWORK_ATTEMPTS_INTERVAL} seconds: {e}",
+            )
+            sleep(NETWORK_ATTEMPTS_INTERVAL)
+            continue
+        logger.debug(
+            f"Caronte setup responded with status_code: {response.status_code} body: {response.text}"
+        )
+        break
+    logger.info("Caronte Setup completed, waiting for Caronte to exit")
+    result_code = process.wait()
+    if result_code != 0:
+        logger.fatal(f"Caronte exited with non 0 exit code: {result_code}")
+    else:
+        logger.info("Caronte exited successfully")
+    exit(result_code)

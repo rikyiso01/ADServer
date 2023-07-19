@@ -1,7 +1,7 @@
 from __future__ import annotations
-from worker.config import load_config, Config
-from worker.scripts import setup_keys
+from worker.scripts.setup_keys import setup_keys
 from worker.ssh import ssh_connect, SSH
+from worker.config import load_config, CONFIG, Config
 from pytest import fixture
 from collections.abc import Iterable
 from os.path import exists
@@ -17,13 +17,14 @@ def test_config() -> Iterable[Config]:
         if exists("config.toml"):
             copyfile("config.toml", f.name)
         copyfile("tests/config.test.toml", "config.toml")
-        yield load_config()
+        load_config("config.toml")
+        yield CONFIG
         copyfile(f.name, "config.toml")
 
 
 @fixture(scope="session")
 def docker(test_config: Config) -> Iterable[Config]:
-    check_call(["docker", "compose", "down", "-v"])
+    check_call(["docker", "compose", "down", "-v", "--remove-orphans"])
     check_call(["docker", "compose", "up", "-d", "--build"])
     sleep(1)
     yield test_config
@@ -33,14 +34,24 @@ def docker(test_config: Config) -> Iterable[Config]:
 
 @fixture(scope="session")
 def remote_server(docker: Config) -> Iterable[SSH]:
-    print("before docker compose")
-    check_call(["docker", "compose", "-f", "tests/docker-compose.yml", "down", "-v"])
+    print("Before docker compose")
+    check_call(
+        [
+            "docker",
+            "compose",
+            "-f",
+            "tests/docker-compose.yml",
+            "down",
+            "-v",
+            "--remove-orphans",
+        ]
+    )
     check_call(
         ["docker", "compose", "-f", "tests/docker-compose.yml", "up", "-d", "--build"]
     )
     sleep(1)
     setup_keys("127.0.0.1", 2222)
-    print("setupped keys")
+    print("Setupped keys")
     sleep(6)
     with ssh_connect("127.0.0.1", 2222) as ssh:
         yield ssh

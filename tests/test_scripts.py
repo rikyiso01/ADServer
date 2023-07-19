@@ -1,5 +1,6 @@
 from __future__ import annotations
-from worker.scripts import setup_git, get_aliases, get_aliases_command
+from worker.scripts.setup_git import setup_git
+from worker.scripts.setup_keys import get_aliases, get_aliases_command
 from worker.ssh import SSH
 from worker.config import Config
 from tempfile import TemporaryDirectory, NamedTemporaryFile

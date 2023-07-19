@@ -1,18 +1,32 @@
 from __future__ import annotations
 from paramiko import MissingHostKeyPolicy, SSHClient, SFTPClient
-from worker.config import load_config
 from collections.abc import Callable
 from typing import Type, Any, ContextManager
 from types import TracebackType
 from sys import stdout, stderr
-from os.path import dirname, basename
 from time import sleep
+from worker.config import CONFIG
+from logging import getLogger
 
 
 class SSH(ContextManager["SSH"]):
-    def __init__(self, client: SSHClient):
+    __logger = getLogger("ssh.SSH")
+
+    def __init__(
+        self,
+        client: SSHClient,
+        /,
+        *,
+        print_command_info: tuple[str, str, int] | None = None,
+    ):
         self.__client = client
         self.__sftp = self.__client.open_sftp()
+        self.__print_command_info = print_command_info
+
+    def print_command(self, cmd: str):
+        if self.__print_command_info is not None:
+            user, host, port = self.__print_command_info
+            print(f"[{user}@{host}:{port}]# {cmd}")
 
     def run(self, command: str, input: bytes = b"") -> int:
         def out(x: bytes) -> None:
@@ -31,6 +45,7 @@ class SSH(ContextManager["SSH"]):
             raise Exception(result)
 
     def popen(self, command: str) -> None:
+        self.print_command(command)
         self.__client.exec_command(command)
 
     def run_output(self, command: str, input: bytes = b"") -> tuple[int, bytes, bytes]:
@@ -54,6 +69,8 @@ class SSH(ContextManager["SSH"]):
         onerr: Callable[[bytes], Any],
         input: bytes = b"",
     ) -> int:
+        self.print_command(command)
+        SSH.__logger.debug(f"Exec ssh command {command}")
         _, stdout, _ = self.__client.exec_command(command)
         channel = stdout.channel
         while input:
@@ -88,23 +105,36 @@ class SSH(ContextManager["SSH"]):
     ):
         self.close()
 
+    def put(self, localpath: str, remotepath: str):
+        if self.__print_command_info is not None:
+            user, host, port = self.__print_command_info
+            print(f"$ scp -P {port} {localpath} {user}@{host}:{remotepath}")
+        SSH.__logger.debug(f"Uploading file from {localpath} to {remotepath}")
+        self.__sftp.put(localpath, remotepath)
+
     @property
     def sftp(self) -> SFTPClient:
         return self.__sftp
 
     def exists(self, path: str) -> bool:
-        return basename(path) in self.__sftp.listdir(dirname(path))
+        return self.run(f"[ -e '{path}' ]") == 0
 
 
-def ssh_connect(ip: str | None = None, port: int | None = None) -> SSH:
-    config = load_config()
+def ssh_connect(
+    ip: str | None = None, port: int | None = None, /, *, print_commands: bool = False
+) -> SSH:
+    logger = getLogger("ssh.ssh_connect")
     client = SSHClient()
     client.set_missing_host_key_policy(MissingHostKeyPolicy())
+    ip = CONFIG["server"]["host"] if ip is None else ip
+    port = CONFIG["server"]["port"] if port is None else port
+    user = "root"
+    logger.debug(f"Opening ssh connection to {user}@{ip}:{port}")
     client.connect(
-        config["server"]["host"] if ip is None else ip,
-        config["server"]["port"] if port is None else port,
-        "root",
-        config["server"]["password"],
+        ip,
+        port,
+        user,
+        CONFIG["server"]["password"],
         timeout=10,
     )
-    return SSH(client)
+    return SSH(client, print_command_info=(user, ip, port) if print_commands else None)
