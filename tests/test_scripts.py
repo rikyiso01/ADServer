@@ -44,7 +44,7 @@ def test_scripts_aliases_command(test_config: Config):
 
 def test_scripts_git(remote_server: SSH):
     check_call(["chmod", "go=", "tests/test_rsa"])
-    setup_git(["project"], "127.0.0.1", 2222)
+    setup_git("project", ip="127.0.0.1", port=2222)
     with TemporaryDirectory() as dir:
         assert (
             call(

@@ -23,6 +23,6 @@ RUN apk --no-cache add poetry
 COPY ./pyproject.toml ./poetry.lock /app/
 RUN poetry install --only main
 COPY worker /app/worker
-ENTRYPOINT []
-HEALTHCHECK --interval=5s --retries=1 CMD [ "poetry","run","python3","-m","worker","server","caronte_check" ]
-CMD [ "poetry","run","python3","-m","worker","server","caronte" ]
+ENTRYPOINT ["sh", "-c"]
+HEALTHCHECK --interval=5s --retries=1 CMD [ "poetry run python3 -m worker $DEBUG server caronte_check" ]
+CMD [ "poetry run python3 -m worker $DEBUG server caronte" ]

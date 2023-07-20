@@ -50,7 +50,17 @@ def remote_server(docker: Config) -> Iterable[SSH]:
         ["docker", "compose", "-f", "tests/docker-compose.yml", "up", "-d", "--build"]
     )
     sleep(1)
-    setup_keys("127.0.0.1", 2222)
+    setup_keys(
+        "127.0.0.1",
+        2222,
+        skip_tools_install=False,
+        skip_aliases=False,
+        skip_keys=False,
+        skip_private_key=False,
+        skip_tcpdump=False,
+        interface_ip="10.89.12.25",
+        ssh_port=2222,
+    )
     print("Setupped keys")
     sleep(6)
     with ssh_connect("127.0.0.1", 2222) as ssh:

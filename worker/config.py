@@ -18,7 +18,7 @@ GITHUB_KEYS_URL = "https://api.github.com/users/{}/keys"
 
 NETWORK_ATTEMPTS_INTERVAL = 1
 
-CONFIG: Config = cast("Config", {})
+CONFIG = cast("Config", {})
 
 
 def load_config(config_path: str):
@@ -34,6 +34,7 @@ class Config(TypedDict):
     __pydantic_config__ = ConfigDict(extra="forbid")  # type: ignore
     teams: Teams
     flag: Flag
+    caronte: Caronte
     farm: Farm
     server: Server
     tcpdumper: TcpDumper
@@ -53,6 +54,12 @@ class Teams(TypedDict):
 class Flag(TypedDict):
     __pydantic_config__ = ConfigDict(extra="forbid")  # type: ignore
     format: str
+
+
+class Caronte(TypedDict):
+    __pydantic_config__ = ConfigDict(extra="forbid")  # type: ignore
+    username: str
+    password: str
 
 
 class Farm(TypedDict):
@@ -80,7 +87,6 @@ class Server(TypedDict):
 
 class TcpDumper(TypedDict):
     __pydantic_config__ = ConfigDict(extra="forbid")  # type: ignore
-    interface: str
     interval: int
     dumps_folder: str
 
@@ -107,18 +113,37 @@ def get_ssh_keys(github_users: list[str]) -> list[str]:
     return result
 
 
+class JsonParseError(Exception):
+    ...
+
+
 def get_ssh_key(github_user: str) -> list[str]:
     logger = getLogger("get_ssh_key")
     result: list[str] = []
     url = GITHUB_KEYS_URL.format(github_user)
     logger.debug(f"Getting ssh key of user {github_user}")
     response = get(url)
+    if response.status_code != 200:
+        logger.error(
+            f"Github responded with non 200 status code: {response.status_code} {response.text}"
+        )
     response.raise_for_status()
-    keys: list[GithubUserKey] = response.json()
-    logger.debug(f"Found {len(keys)} keys for user {github_user}")
-    for key in keys:
-        result.append(key["key"])
-    return result
+    json = response.json()
+    try:
+        if not isinstance(json, list):
+            raise JsonParseError()
+        keys: list[GithubUserKey] = json
+        logger.debug(f"Found {len(keys)} keys for user {github_user}")
+        for key in keys:
+            if not isinstance(key, dict):  # type: ignore
+                raise JsonParseError()
+            if "key" not in key:
+                raise JsonParseError()
+            result.append(key["key"])
+        return result
+    except JsonParseError:
+        logger.error(f"Github responded with an invalid json: {json}")
+        raise
 
 
 class GithubUserKey(TypedDict):

@@ -11,109 +11,110 @@ from worker.scripts.setup_keys import setup_keys
 from worker.scripts.autosetup import autosetup
 from worker.scripts.status import status
 from worker.scripts.check_keys import check_keys
+from worker.scripts.check_repo import check_repo
 from worker.config import load_config
 from logging import basicConfig, INFO, DEBUG
-from os import environ
 from pydantic import ValidationError
-from sys import stderr
+from termcolor import cprint
+from inspect import signature, Parameter
+from typing import Any
+
+SCRIPTS = [setup_git, setup_keys, autosetup, status, check_keys, check_repo]
+SERVER_COMMANDS = {
+    "caronte": caronte,
+    "caronte_check": caronte_check,
+    "destructivefarm": destructivefarm,
+    "destructivefarm_check": destructivefarm_check,
+    "worker": worker,
+    "worker_check": worker_check,
+}
+
+
+def parse_docstring(docstring: str) -> tuple[str, dict[str, str]]:
+    lines = [l.strip() for l in docstring.splitlines()]
+    if "" not in lines:
+        return " ".join(lines), {}
+    index = lines.index("")
+    description = " ".join(lines[:index])
+    args = lines[index + 1 :]
+    result: dict[str, str] = {}
+    for arg in args:
+        assert arg.startswith("- ")
+        index = arg.index(": ")
+        key = arg[2:index]
+        value = arg[index + 2 :]
+        result[key] = value
+    return description, result
 
 
 def main():
-    basicConfig(level=DEBUG if "DEBUG" in environ and environ["DEBUG"] else INFO)
     parser = ArgumentParser(prog="poetry run python -m worker")
-    parser.add_argument("-c", "--config-file", default="config.toml")
-    sub = parser.add_subparsers(required=True, dest="script")
-    subparser = sub.add_parser("server")
-    subparser.add_argument(
-        "service",
-        choices=[
-            "caronte",
-            "destructivefarm",
-            "destructivefarm_check",
-            "caronte_check",
-            "worker",
-            "worker_check",
-        ],
+    parser.add_argument(
+        "-c",
+        "--config-file",
+        default="config.toml",
+        help="change the config file location",
     )
-    subparser = sub.add_parser("setup_keys")
-    subparser.add_argument("ip", default=None, nargs="?")
-    subparser.add_argument("port", default=None, nargs="?")
-    subparser.add_argument("--skip-tools-install", action="store_true", default=False)
-    subparser.add_argument("--skip-keys", action="store_true", default=False)
-    subparser.add_argument("--skip-aliases", action="store_true", default=False)
-    subparser.add_argument("--skip-private-key", action="store_true", default=False)
-    subparser.add_argument("--skip-tcpdump", action="store_true", default=False)
-    subparser = sub.add_parser("setup_git")
-    subparser.add_argument("--ip", default=None)
-    subparser.add_argument("--port", default=None, type=int)
-    subparser.add_argument("services", nargs="+")
-    subparser = sub.add_parser("autosetup")
-    subparser.add_argument("ip", default=None, nargs="?")
-    subparser.add_argument("port", default=None, nargs="?")
-    subparser.add_argument("--skip-tools-install", action="store_true", default=False)
-    subparser.add_argument("--skip-keys", action="store_true", default=False)
-    subparser.add_argument("--skip-aliases", action="store_true", default=False)
-    subparser.add_argument("--skip-private-key", action="store_true", default=False)
-    subparser.add_argument("--skip-tcpdump", action="store_true", default=False)
-    subparser.add_argument("--skip-git", action="store_true", default=False)
-    subparser = sub.add_parser("status")
-    subparser = sub.add_parser("check_keys")
-    args = parser.parse_args()
+    parser.add_argument(
+        "-d", "--debug", default=False, action="store_true", help="add more logs"
+    )
+    sub = parser.add_subparsers(required=True, dest="script")
+    subparser = sub.add_parser("server", help="commands used by the docker images")
+    subparser.add_argument("service", choices=[command for command in SERVER_COMMANDS])
+    for script in SCRIPTS:
+        assert script.__doc__ is not None
+        description, args_help = parse_docstring(script.__doc__)
+        subparser = sub.add_parser(script.__name__, help=description)
+        sign = signature(script)
+        for parameter in sign.parameters.values():
+            assert (
+                parameter.name in args_help
+            ), f"{parameter.name} {args_help} {description}"
+            help = args_help[parameter.name]
+            assert (
+                parameter.annotation == "bool"
+                or "None" in parameter.annotation
+                or parameter.kind == Parameter.VAR_POSITIONAL
+            ), f"{script.__name__}({parameter.name}: {parameter.annotation})"
+            if parameter.kind == Parameter.KEYWORD_ONLY:
+                subparser.add_argument(
+                    f"--{parameter.name.replace('_','-')}",
+                    action="store_true" if parameter.annotation == "bool" else "store",
+                    default=False if parameter.annotation == "bool" else None,
+                    help=help,
+                )
+            elif parameter.kind == Parameter.VAR_POSITIONAL:
+                subparser.add_argument(parameter.name, nargs="+", help=help)
+            elif parameter.kind == Parameter.POSITIONAL_ONLY:
+                subparser.add_argument(parameter.name, nargs="?", help=help)
+            else:
+                assert False, parameter.kind
+    args = vars(parser.parse_args())
+    basicConfig(level=DEBUG if args["debug"] else INFO)
     try:
-        load_config(args.config_file)
+        load_config(args["config_file"])
     except ValidationError as e:
-        print(f"\033[91mError validating {args.config_file}", file=stderr)
+        cprint(f"Error validating {args['config_file']}", "light_red")
         errors = e.errors(include_url=False)
         for error in errors:
-            print(
-                error["msg"] + ":", ".".join(str(c) for c in error["loc"]), file=stderr
+            cprint(
+                f"{error['msg']}: {'.'.join(str(c) for c in error['loc'])}", "light_red"
             )
-        print("\x1b[0m", end="")
         exit(1)
-    if args.script == "server":
-        if args.service == "caronte":
-            caronte()
-        elif args.service == "caronte_check":
-            caronte_check()
-        elif args.service == "destructivefarm":
-            destructivefarm()
-        elif args.service == "destructivefarm_check":
-            destructivefarm_check()
-        elif args.service == "worker":
-            worker()
-        elif args.service == "worker_check":
-            worker_check()
+    if args["script"] == "server":
+        SERVER_COMMANDS[args["service"]]()
+        return
+    script_dict = {script.__name__: script for script in SCRIPTS}
+    script = script_dict[args["script"]]
+    varargs: list[Any] = []
+    kwargs: dict[str, Any] = {}
+    for parameter in signature(script).parameters.values():
+        arg = args[parameter.name]
+        if parameter.kind == Parameter.KEYWORD_ONLY:
+            kwargs[parameter.name] = arg
         else:
-            assert False, "Server option not implemented"
-    elif args.script == "setup_keys":
-        setup_keys(
-            args.ip,
-            args.port,
-            skip_tools_install=args.skip_tools_install,
-            skip_keys=args.skip_keys,
-            skip_aliases=args.skip_aliases,
-            skip_private_key=args.skip_private_key,
-            skip_tcpdump=args.skip_tcpdump,
-        )
-    elif args.script == "setup_git":
-        setup_git(args.services, args.ip, args.port)
-    elif args.script == "autosetup":
-        autosetup(
-            args.ip,
-            args.port,
-            skip_tools_install=args.skip_tools_install,
-            skip_keys=args.skip_keys,
-            skip_aliases=args.skip_aliases,
-            skip_private_key=args.skip_private_key,
-            skip_tcpdump=args.skip_tcpdump,
-            skip_git=args.skip_git,
-        )
-    elif args.script == "status":
-        status()
-    elif args.script == "check_keys":
-        check_keys()
-    else:
-        assert False, "Option not implemented"
+            varargs.append(arg)
+    script(*varargs, **kwargs)
 
 
 if __name__ == "__main__":

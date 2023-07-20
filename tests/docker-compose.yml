@@ -10,7 +10,8 @@ services:
       - NET_ADMIN
       - NET_RAW
     networks:
-      - adserver_default
+      adserver_default:
+        ipv4_address: 10.89.12.25
 
   gitserver:
     hostname: gitserver

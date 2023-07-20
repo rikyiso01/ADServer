@@ -38,6 +38,31 @@ test = ["anyio[trio]", "coverage[toml] (>=4.5)", "hypothesis (>=4.0)", "mock (>=
 trio = ["trio (<0.22)"]
 
 [[package]]
+name = "argdantic"
+version = "0.4.0"
+description = "Typed command line interfaces with argparse and pydantic"
+category = "main"
+optional = false
+python-versions = "*"
+files = [
+    {file = "argdantic-0.4.0-py2.py3-none-any.whl", hash = "sha256:e4b340f355894844b513dd9c89796243e1f60d45f2ebaa902065542187133307"},
+    {file = "argdantic-0.4.0.tar.gz", hash = "sha256:9bbc8d0a8b128ac56107a137a3f9b067340925c16cec806f7cb69eefbbea61d1"},
+]
+
+[package.dependencies]
+pydantic = ">=1.10.0"
+
+[package.extras]
+all = ["orjson (>=3.6.4,<4.0)", "python-dotenv (>=0.19.0,<1.0)", "pyyaml (>=6.0.0,<7.0)", "tomli (>=2.0,<3.0)"]
+dev = ["black (>=23.1.0,<24.0)", "flake8 (>=6.0.0,<7.0)", "isort (>=5.10.0,<6.0)"]
+docs = ["mdx-include (>=1.4.0,<2.0)", "mkdocs (>=1.4.0,<2.0)", "mkdocs-material (>=8.5.0,<9.0)"]
+env = ["python-dotenv (>=0.19.0,<1.0)"]
+json = ["orjson (>=3.6.4,<4.0)"]
+test = ["coverage (>=6.1.2,<7.0)", "mock (>=4.0.0,<5.0)", "pytest (>=6.2.5,<7.0)", "pytest-cov (>=3.0.0,<3.2)", "pytest-xdist (>=2.5.0,<3.0)"]
+toml = ["tomli (>=2.0,<3.0)"]
+yaml = ["pyyaml (>=6.0.0,<7.0)"]
+
+[[package]]
 name = "bcrypt"
 version = "4.0.1"
 description = "Modern password hashing for your software and your servers"
@@ -593,6 +618,21 @@ files = [
 ]
 
 [[package]]
+name = "termcolor"
+version = "2.3.0"
+description = "ANSI color formatting for output in terminal"
+category = "main"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "termcolor-2.3.0-py3-none-any.whl", hash = "sha256:3afb05607b89aed0ffe25202399ee0867ad4d3cb4180d98aaf8eefa6a5f7d475"},
+    {file = "termcolor-2.3.0.tar.gz", hash = "sha256:b5b08f68937f138fe92f6c089b99f1e2da0ae56c52b78bf7075fd95420fd9a5a"},
+]
+
+[package.extras]
+tests = ["pytest", "pytest-cov"]
+
+[[package]]
 name = "toml"
 version = "0.10.2"
 description = "Python Library for Tom's Obvious, Minimal Language"
@@ -631,4 +671,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "bb8b28848a74765c11accccb03c99ac115007bff810c3b2c1aacc1dfaca8ee6e"
+content-hash = "e7e7a784ac2cd84354bc01cd5e2b544bc0a4bcdf093df82f8f834c7772ca74c8"

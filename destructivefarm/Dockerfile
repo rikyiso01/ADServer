@@ -18,5 +18,6 @@ RUN poetry install --only main
 RUN poetry run python3 -m pip install -r server/requirements.txt
 COPY ./worker /app/worker
 
-HEALTHCHECK --interval=5s --retries=1 CMD [ "poetry","run","python3","-m","worker","server","destructivefarm_check" ]
-CMD [ "poetry", "run", "python3", "-m", "worker","server", "destructivefarm" ]
+ENTRYPOINT [ "sh", "-c" ]
+HEALTHCHECK --interval=5s --retries=1 CMD [ "poetry run python3 -m worker $DEBUG server destructivefarm_check" ]
+CMD [ "poetry run python3 -m worker $DEBUG server destructivefarm" ]

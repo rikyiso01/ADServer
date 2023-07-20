@@ -6,6 +6,10 @@ max_team = 29
 [flag]
 format = "[A-Z0-9]{31}="
 
+[caronte]
+username = "username"
+password = "password"
+
 [farm]
 password = "1234"
 enable_api_auth = false
@@ -34,7 +38,6 @@ docker-compose = 'docker compose'
 abcd = "ls"
 
 [tcpdumper]
-interface = 'eth0'
 interval = 1
 dumps_folder = ".dumps"
 

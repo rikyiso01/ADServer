@@ -122,8 +122,14 @@ def upload_all() -> None:
         response = post(
             "http://caronte:3333/api/pcap/file",
             json={"file": file, "flush_all": False, "delete_original_file": False},
+            auth=(CONFIG["caronte"]["username"], CONFIG["caronte"]["password"]),
         )
-        response.raise_for_status()
+        if response.status_code != 202:
+            logger.error(
+                f"Caronte upload responded with non 202 http code: {response.status_code} {response.text}"
+            )
+            response.raise_for_status()
+            assert False
         logger.debug(f"Backing up file before removal")
         copyfile(file, backup_file)
         remove(file)
