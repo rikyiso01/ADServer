@@ -58,3 +58,6 @@ volumes:
 networks:
   default:
     name: adserver_default
+    ipam:
+      config:
+        - subnet: 10.89.12.0/24
