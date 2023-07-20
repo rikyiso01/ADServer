@@ -1,9 +1,8 @@
 [tool.poetry]
 name = "adserver"
-version = "0.1.1"
-description = ""
+version = "1.0.0"
+description = "A fast to setup support server for AD ctfs"
 authors = ["rikyiso01 <riky.isola@gmail.com>"]
-readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.8"
@@ -12,7 +11,6 @@ paramiko = "^3.0.0"
 httpx = "^0.23.3"
 pydantic = "^2.0.3"
 termcolor = "^2.3.0"
-
 
 [tool.poetry.group.tests.dependencies]
 pytest = "^7.2.1"
