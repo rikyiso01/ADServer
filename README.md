@@ -38,7 +38,7 @@ poetry install
 Prepare the docker images
 
 ```bash
-docker-compose build
+docker compose build
 ```
 
 ## Usage
