@@ -16,7 +16,7 @@ jobs:
         with:
           submodules: true
       - name: Prepare release Asset
-        run: zip -r adserver.zip caronte destructivefarm worker .dockerignore config.example.toml docker-compose.yml poetry.lock pyproject.toml README.md shell.nix
+        run: zip -r adserver.zip caronte destructivefarm worker .dockerignore config.example.toml docker-compose.yml poetry.lock pyproject.toml README.md
       - name: Upload Release Asset
         uses: softprops/action-gh-release@v1
         with:
