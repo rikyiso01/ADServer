@@ -12,7 +12,7 @@ VOLUME [ "/data" ]
 
 FROM destructivefarm
 
-RUN apk add --no-cache poetry
+RUN pip install --no-cache-dir poetry
 COPY ./poetry.lock ./pyproject.toml /app/
 RUN poetry install --only main
 RUN poetry run python3 -m pip install -r server/requirements.txt

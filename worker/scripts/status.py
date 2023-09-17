@@ -6,7 +6,7 @@ SERVICES = ["destructivefarm", "caronte", "worker"]
 
 
 def status():
-    """check if the services are working normally"""
+    """Check if the services are working normally"""
     ok = True
     for service in SERVICES:
         print(

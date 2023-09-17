@@ -1,5 +1,5 @@
 from __future__ import annotations
-from worker.destructivefarm import generate_config, healthcheck
+from worker.destructivefarm import generate_config, destructivefarm_check
 from worker.config import Config
 from typing import Any
 from os.path import join
@@ -22,4 +22,4 @@ def test_destructivefarm_config_generation(test_config: Config) -> None:
 
 
 def test_destructivefarm_healthcheck(remote_server: SSH) -> None:
-    healthcheck()
+    destructivefarm_check()

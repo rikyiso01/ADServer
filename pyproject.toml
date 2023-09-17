@@ -5,12 +5,15 @@ description = "A fast to setup support server for AD ctfs"
 authors = ["rikyiso01 <riky.isola@gmail.com>"]
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = "^3.11"
 toml = "^0.10.2"
 paramiko = "^3.0.0"
 httpx = "^0.23.3"
 pydantic = "^2.0.3"
 termcolor = "^2.3.0"
+result = "^0.13.1"
+attrs = "^23.1.0"
+typer = "^0.9.0"
 
 [tool.poetry.group.tests.dependencies]
 pytest = "^7.2.1"

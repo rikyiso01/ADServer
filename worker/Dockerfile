@@ -1,7 +1,7 @@
 FROM docker.io/python:3.11.4-alpine3.18
 
 WORKDIR /app
-RUN apk add --no-cache poetry
+RUN pip install --no-cache-dir poetry
 COPY ./pyproject.toml ./poetry.lock /app/
 RUN poetry install --only main
 COPY worker /app/worker

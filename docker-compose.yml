@@ -18,6 +18,7 @@ services:
     image: docker.io/mongo:6.0.8-jammy
     hostname: mongo
     restart: unless-stopped
+    command: --wiredTigerCacheSizeGB 1
 
   caronte:
     container_name: adserver-caronte

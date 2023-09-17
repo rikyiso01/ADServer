@@ -1,7 +1,7 @@
 { pkgs ? import <nixpkgs> { } }:
 pkgs.mkShell {
   nativeBuildInputs = with pkgs; [
-    python38
+    python311
     poetry
     docker
     docker-compose
@@ -10,7 +10,7 @@ pkgs.mkShell {
   ];
 
   shellHook = ''
-    poetry env use python3.8
+    poetry env use python3.11
     poetry install
     if [ -z $DOCKER_HOST ]
     then

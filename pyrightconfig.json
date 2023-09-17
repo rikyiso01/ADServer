@@ -1,0 +1,12 @@
+{
+    "typeCheckingMode": "strict",
+    "reportUnusedCallResult": true,
+    "reportCallInDefaultInitializer": true,
+    "reportImplicitOverride": true,
+    "reportImplicitStringConcatenation": true,
+    "reportMissingSuperCall": true,
+    "reportPropertyTypeMismatch": true,
+    "reportShadowedImports": true,
+    "reportUninitializedInstanceVariable": true,
+    "reportUnnecessaryTypeIgnoreComment": true
+}

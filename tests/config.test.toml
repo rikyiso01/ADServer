@@ -39,7 +39,7 @@ abcd = "ls"
 
 [tcpdumper]
 interval = 1
-dumps_folder = ".dumps"
+dumps_folder = "dumps"
 
 [git]
 git_repo = 'git@gitserver:/opt/git/project.git'

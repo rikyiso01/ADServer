@@ -14,3 +14,4 @@ services:
   mongo:
     hostname: mongo
     image: docker.io/mongo:6.0.8-jammy
+    command: --wiredTigerCacheSizeGB 1

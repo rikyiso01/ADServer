@@ -3,4 +3,4 @@ path = destructivefarm/src
 url = https://github.com/DestructiveVoice/DestructiveFarm.git
 [submodule "caronte/src"]
 path = caronte/src
-url = https://github.com/eciavatta/caronte.git
+url = https://github.com/eciavatta/caronte
